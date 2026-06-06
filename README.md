@@ -387,7 +387,7 @@ Found a bug, hit a problem, or have an idea to improve the project? Please
 - your environment (OS, Python version, GPU/CUDA, Ollama model);
 - any error output or stack trace.
 
-Feature ideas and suggestions are equally welcome — open an issue describing the
+Feature ideas and suggestions are equally welcome, just open an issue describing the
 use case. For questions about contributing code, see below.
 
 ## Contributing
