@@ -1,0 +1,75 @@
+[project]
+name = "shortificator"
+version = "1.0.0"
+description = "Local pipeline that turns long videos into vertical YouTube Shorts"
+authors = [
+    {name = "Adler Medrado",email = "adler@adlermedrado.com.br"}
+]
+requires-python = ">=3.13"
+dependencies = [
+    "faster-whisper>=1.0.0",
+    "opencv-python-headless>=4.9.0",
+    "ollama>=0.3.0",
+    "numpy>=1.26.0",
+    "pillow (>=12.2.0,<13.0.0)",
+    "yt-dlp>=2024.0.0",
+]
+license = "MIT"
+
+
+[tool.poetry]
+package-mode = false
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.6.0"
+pytest = "^8.0.0"
+pytest-cov = "^7.1.0"
+
+
+[tool.ruff]
+target-version = "py313"
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "I",
+    "UP",
+    "B",
+    "SIM",
+]
+ignore = [
+    "E501",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "lf"
+
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --cov=shortificator --cov-report=term-missing"
+
+
+[tool.coverage.run]
+source = ["shortificator"]
+branch = true
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
