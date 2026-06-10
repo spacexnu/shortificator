@@ -1,4 +1,4 @@
-.PHONY: help install run lint lint-fix fmt fmt-check typecheck test check clean check-env
+.PHONY: help install run lint lint-fix fmt fmt-check typecheck test check clean check-env docs-install docs-serve docs-build
 
 # Default video/output overridable on the command line:
 #   make run INPUT=my_video.mp4 OUTPUT=./output MODEL=llama3 MAX=5 CROP_MODE=face CONTENT_MODE=talking-head
@@ -57,6 +57,15 @@ cov: ## Run the test suite and emit XML + HTML coverage reports
 	poetry run pytest --cov-report=xml --cov-report=html
 
 check: lint fmt-check typecheck ## Run lint, format check and syntax check
+
+docs-install: ## Install documentation dependencies
+	poetry install --only docs --no-root
+
+docs-serve: ## Serve the documentation locally
+	poetry run mkdocs serve
+
+docs-build: ## Build the documentation site
+	poetry run mkdocs build --strict
 
 clean: ## Remove generated outputs and caches
 	rm -rf $(OUTPUT) __pycache__ .pytest_cache .ruff_cache

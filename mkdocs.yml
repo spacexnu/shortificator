@@ -1,0 +1,97 @@
+site_name: shortificator
+site_description: Local pipeline that turns long videos into vertical Shorts.
+site_url: https://spacexnu.github.io/shortificator/
+repo_url: https://github.com/spacexnu/shortificator
+repo_name: spacexnu/shortificator
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  language: en
+  logo: assets/logo.svg
+  favicon: assets/favicon.svg
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.indexes
+    - toc.follow
+    - content.code.copy
+    - content.tabs.link
+    - search.suggest
+    - search.highlight
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/brightness-auto
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: black
+      accent: amber
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to system preference
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - getting-started/index.md
+      - Installation: getting-started/installation.md
+      - First Run: getting-started/first-run.md
+  - Guide:
+      - guide/index.md
+      - Pipeline: guide/pipeline.md
+      - Clip Analysis: guide/clip-analysis.md
+      - Cropping Modes: guide/cropping.md
+      - Subtitles: guide/subtitles.md
+      - Reusing Artifacts: guide/reuse.md
+  - Reference:
+      - reference/cli.md
+      - reference/output-files.md
+      - reference/configuration.md
+  - Development:
+      - development/index.md
+      - Project Layout: development/project-layout.md
+      - Testing: development/testing.md
+      - GitHub Pages Deploy: development/github-pages.md
+
+plugins:
+  - search
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - toc:
+      permalink: true
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/spacexnu/shortificator
+
+extra_css:
+  - assets/stylesheets/extra.css
+
+exclude_docs: |
+  requirements.txt

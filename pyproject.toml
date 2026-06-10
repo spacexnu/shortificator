@@ -27,6 +27,24 @@ pytest = "^8.0.0"
 pytest-cov = "^7.1.0"
 
 
+[tool.poetry.group.docs]
+optional = true
+
+[tool.poetry.group.docs.dependencies]
+mkdocs-material = "9.5.49"
+
+
+[tool.poetry.group.ci]
+optional = true
+
+[tool.poetry.group.ci.dependencies]
+numpy = ">=1.26.0"
+opencv-python-headless = ">=4.9.0"
+pillow = ">=12.2.0,<13.0.0"
+pytest = "^8.0.0"
+pytest-cov = "^7.1.0"
+
+
 [tool.ruff]
 target-version = "py313"
 line-length = 120
