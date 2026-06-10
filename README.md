@@ -5,6 +5,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python 3.13+](https://img.shields.io/badge/python-3.13%2B-blue.svg)](https://www.python.org/)
 
+[Documentation](https://spacexnu.github.io/shortificator/)
+
 A fully local pipeline that turns long videos into vertical **YouTube Shorts** — no paid external APIs. It runs on your own machine and uses the GPU via CUDA.
 
 ## Demo
@@ -394,6 +396,11 @@ use case. For questions about contributing code, see below.
 
 Contributions are welcome! Please read the [contribution guidelines](CONTRIBUTING.md)
 before opening a pull request.
+
+## Documentation
+
+The full documentation is available at
+[https://spacexnu.github.io/shortificator/](https://spacexnu.github.io/shortificator/).
 
 ## License
 

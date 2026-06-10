@@ -41,6 +41,7 @@ coverage.xml
 .hypothesis/
 .pytest_cache/
 htmlcov/
+site/
 
 # Ruff / type checkers
 .ruff_cache/
