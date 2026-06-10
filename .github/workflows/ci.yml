@@ -14,13 +14,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install Poetry
+        run: |
+          pipx install poetry
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
           cache: poetry
           cache-dependency-path: poetry.lock
-      - name: Install Poetry
-        run: pipx install poetry
       - name: Install lint dependencies
         run: poetry install --only dev --no-root
       - run: poetry run ruff check .
@@ -30,6 +32,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Install Poetry
+        run: |
+          pipx install poetry
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
@@ -38,8 +44,6 @@ jobs:
       # The unit suite only needs the lightweight runtime deps; the heavy ones
       # (torch/ultralytics/faster-whisper/ollama/yt-dlp) are imported lazily and
       # never reached by the tests, so we skip the multi-GB CUDA wheels here.
-      - name: Install Poetry
-        run: pipx install poetry
       - name: Install test dependencies
         run: poetry install --only ci --no-root
       - name: Run tests with coverage
