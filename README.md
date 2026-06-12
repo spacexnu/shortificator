@@ -77,6 +77,48 @@ make check-env
 
 This checks CUDA availability, lists Ollama models, and prints the FFmpeg version.
 
+### Docker (optional)
+
+If you prefer containers, the repo ships a `Dockerfile` and a `compose.yaml`.
+The image bundles Python, FFmpeg, fonts and all Python dependencies — no Poetry
+or local Python setup needed. The local Poetry workflow above keeps working;
+Docker is just an alternative.
+
+Ollama also runs as a compose service, so **nothing besides Docker needs to be
+installed on the host**. The only extra requirements are
+[Docker](https://docs.docker.com/get-docker/) and the
+[NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
+(GPU is used by both transcription and the LLM).
+
+```bash
+make docker-build                          # build the image
+make docker-pull MODEL=mistral-small      # pull an LLM into the Ollama service
+make docker-check-env                      # verify CUDA + Ollama from inside the container
+make docker-run INPUT=my_video.mp4 MODEL=mistral-small
+make docker-down                           # stop the Ollama service when done
+```
+
+Or with Docker Compose directly (any CLI flag works after the service name):
+
+```bash
+docker compose run --rm shortificator \
+  --input /videos/my_video.mp4 \
+  --model mistral-small \
+  --max-shorts 5
+```
+
+Input videos are read from the repo root by default, mounted at `/videos`
+inside the container (set `VIDEOS_DIR=/path/to/videos` to change it). Outputs
+land in `./output` on the host, the YuNet model is cached in `./models`, and
+the Whisper model (~3 GB for `large-v3`) and pulled LLMs are kept in named
+Docker volumes so they download only once.
+
+> **Reusing a host Ollama:** if you already run Ollama on the host and don't
+> want the containerized one, set
+> `OLLAMA_HOST=http://host.docker.internal:11434` when invoking compose or
+> make. Note that the host Ollama must listen beyond loopback for containers
+> to reach it (start it with `OLLAMA_HOST=0.0.0.0 ollama serve`).
+
 ## Usage
 
 The pipeline is a Python package. Run it as a module:

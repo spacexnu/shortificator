@@ -1,0 +1,43 @@
+# VCS / CI
+.git/
+.github/
+.agents/
+.claude/
+.codex/
+
+# Python caches and tooling
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+.venv/
+venv/
+
+# Docs and site builds
+docs/
+site/
+mkdocs.yml
+blog/
+assets/
+
+# Generated / local artifacts
+output/
+downloads/
+models/
+memory/
+yolo/
+source/
+
+# Tests and project notes
+tests/
+*.md
+LICENSE
+
+# Docker itself
+Dockerfile
+compose.yaml
+.dockerignore

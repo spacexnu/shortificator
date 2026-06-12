@@ -48,6 +48,7 @@ nav:
       - getting-started/index.md
       - Installation: getting-started/installation.md
       - First Run: getting-started/first-run.md
+      - Docker: getting-started/docker.md
   - Guide:
       - guide/index.md
       - Pipeline: guide/pipeline.md
