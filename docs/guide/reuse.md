@@ -21,6 +21,12 @@ poetry run python -m shortificator \
 
 This is the fastest rerender path.
 
+!!! tip
+    If you want specific cut points instead of reusing the LLM picks, pass them
+    directly with `--clip START-END` (repeatable) — see
+    [Clip Analysis](clip-analysis.md#manual-clips). It combines with
+    `--transcript`, but not with `--candidates`.
+
 ## Typical style iteration
 
 ```bash

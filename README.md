@@ -169,6 +169,21 @@ poetry run python -m shortificator \
   --dynamic-subtitles
 ```
 
+Pick the cut points yourself (skips the LLM analysis entirely; transcription,
+subtitles, and `--srt` work as usual):
+
+```bash
+poetry run python -m shortificator \
+  --input my_video.mp4 \
+  --clip 1:30-2:10 \
+  --clip 5:00-5:45 \
+  --dynamic-subtitles
+```
+
+Timestamps accept plain seconds (`90`, `90.5`), `MM:SS`, or `HH:MM:SS`. Every
+`--clip` is rendered in the order given, so `--max-shorts`, `--min-duration`,
+and `--max-duration` do not apply.
+
 Reuse a previous transcript (skips Whisper, the slowest step — useful when
 iterating on the analysis/render steps for the same video):
 
@@ -203,6 +218,7 @@ poetry run python -m shortificator \
 | `--max-shorts`, `-n`  | `5`                | Maximum number of Shorts to render                |
 | `--min-duration`      | `30`               | Minimum Short duration in seconds                 |
 | `--max-duration`      | `60`               | Maximum Short duration in seconds                 |
+| `--clip`              | —                  | Manual cut as `START-END` (seconds, `MM:SS`, or `HH:MM:SS`); repeatable, skips LLM analysis |
 | `--candidates`        | —                  | JSON of pre-generated candidates (skips analysis) |
 | `--transcript`        | —                  | JSON of a previous transcript (skips Whisper)     |
 | `--language`          | `Portuguese`       | Language for the LLM `hook`/`reason` text (or set `OUTPUT_LANGUAGE`) |

@@ -80,6 +80,34 @@ def test_reuses_candidates_and_skips_llm(patched, tmp_path):
     assert len(patched["render"]) == 1
 
 
+def test_manual_clips_skip_llm_and_render_all(patched, tmp_path, capsys):
+    pipeline.run(
+        input_video="my_video.mp4",
+        output_dir=str(tmp_path),
+        manual_clips=[(90.0, 130.0), (300.0, 345.0), (400.0, 450.0)],
+        max_shorts=1,  # ignored: every manual clip is rendered
+    )
+
+    assert patched["transcribe"] == 1
+    assert patched["analyze"] == 0
+    assert len(patched["render"]) == 3
+    assert "skipping LLM analysis" in capsys.readouterr().out
+
+    data = json.loads((tmp_path / "my_video_candidates.json").read_text())
+    assert [(c["start"], c["end"]) for c in data] == [(90.0, 130.0), (300.0, 345.0), (400.0, 450.0)]
+
+
+def test_manual_clips_still_write_srt(patched, tmp_path):
+    pipeline.run(
+        input_video="my_video.mp4",
+        output_dir=str(tmp_path),
+        manual_clips=[(10.0, 45.0)],
+        generate_srt=True,
+    )
+    assert (tmp_path / "my_video.srt").exists()
+    assert (tmp_path / "my_video_short_01.srt").exists()
+
+
 def test_no_candidates_aborts_before_render(patched, monkeypatch, tmp_path, capsys):
     monkeypatch.setattr(pipeline, "analyze_with_llm", lambda segments, **kw: [])
     pipeline.run(input_video="my_video.mp4", output_dir=str(tmp_path), max_shorts=1)

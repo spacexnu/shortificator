@@ -20,6 +20,7 @@ poetry run python shorts_factory.py --help
 | `--max-shorts`, `-n` | `5` | maximum number of Shorts to render |
 | `--min-duration` | `30` | minimum clip duration in seconds |
 | `--max-duration` | `60` | maximum clip duration in seconds |
+| `--clip` | none | manual cut as `START-END` (seconds, `MM:SS` or `HH:MM:SS`); repeatable, skips LLM analysis |
 | `--transcript` | none | saved transcript JSON; skips Whisper |
 | `--candidates` | none | saved candidates JSON; skips LLM analysis |
 | `--language` | `Portuguese` | language for hook/reason text |

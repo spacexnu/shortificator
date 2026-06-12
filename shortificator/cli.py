@@ -45,6 +45,38 @@ def build_dynamic_subtitle_style(args) -> DynamicSubtitleStyle:
     return style
 
 
+def parse_timestamp(value: str) -> float:
+    """Parse 'SS', 'MM:SS' or 'HH:MM:SS' (fractions allowed) into seconds."""
+    parts = value.strip().split(":")
+    if not 1 <= len(parts) <= 3:
+        raise ValueError(f"Invalid timestamp: '{value}'")
+    try:
+        numbers = [float(p) for p in parts]
+    except ValueError:
+        raise ValueError(f"Invalid timestamp: '{value}'") from None
+    if any(n < 0 for n in numbers):
+        raise ValueError(f"Invalid timestamp: '{value}'")
+    seconds = 0.0
+    for n in numbers:
+        seconds = seconds * 60 + n
+    return seconds
+
+
+def parse_clips(specs: list[str]) -> list[tuple[float, float]]:
+    """Parse repeated --clip START-END specs into (start, end) pairs in seconds."""
+    clips = []
+    for spec in specs:
+        start_str, sep, end_str = spec.partition("-")
+        if not sep or not start_str or not end_str:
+            raise ValueError(f"Invalid clip '{spec}': expected START-END (e.g. 1:30-2:10)")
+        start = parse_timestamp(start_str)
+        end = parse_timestamp(end_str)
+        if end <= start:
+            raise ValueError(f"Invalid clip '{spec}': end must be greater than start")
+        clips.append((start, end))
+    return clips
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="shorts_factory — Local YouTube Shorts pipeline with YuNet + Whisper + Ollama"
@@ -79,6 +111,14 @@ def build_parser() -> argparse.ArgumentParser:
         type=float,
         default=SHORT_MAX_SECS,
         help=f"Maximum Short duration in seconds (default: {SHORT_MAX_SECS})",
+    )
+    parser.add_argument(
+        "--clip",
+        action="append",
+        metavar="START-END",
+        help="Manual cut as START-END timestamps (seconds, MM:SS or HH:MM:SS); repeat for multiple "
+        "Shorts (e.g. --clip 1:30-2:10 --clip 5:00-5:45). Skips LLM clip selection; "
+        "--max-shorts and the duration bounds are ignored.",
     )
     parser.add_argument(
         "--candidates",
@@ -195,6 +235,17 @@ def main():
         print("[ERROR] --max-duration must be greater than --min-duration.")
         sys.exit(1)
 
+    manual_clips = None
+    if args.clip:
+        if args.candidates:
+            print("[ERROR] Use either --clip or --candidates, not both.")
+            sys.exit(1)
+        try:
+            manual_clips = parse_clips(args.clip)
+        except ValueError as e:
+            print(f"[ERROR] {e}")
+            sys.exit(1)
+
     # Style is parsed before touching heavy deps so bad input fails fast.
     dynamic_subtitle_style = build_dynamic_subtitle_style(args)
 
@@ -222,6 +273,7 @@ def main():
         output_dir=args.output,
         llm_model=args.model,
         max_shorts=args.max_shorts,
+        manual_clips=manual_clips,
         candidates_json=args.candidates,
         transcript_json=args.transcript,
         output_language=args.language,

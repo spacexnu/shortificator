@@ -19,6 +19,7 @@ def run(
     llm_model: str = "llama3",
     max_shorts: int = 5,
     skip_analysis: bool = False,
+    manual_clips: list[tuple[float, float]] | None = None,
     candidates_json: str | None = None,
     transcript_json: str | None = None,
     output_language: str = OUTPUT_LANGUAGE,
@@ -64,7 +65,15 @@ def run(
         print(f"      Full-video subtitle saved to {full_srt_path.name}")
 
     # --- LLM analysis ---
-    if candidates_json:
+    if manual_clips:
+        # User picked the cut points; render exactly those clips, no LLM selection.
+        candidates = [
+            ShortCandidate(start, end, hook=f"Manual clip {i + 1}", reason="User-specified time range")
+            for i, (start, end) in enumerate(manual_clips)
+        ]
+        max_shorts = len(candidates)
+        print(f"[2/4] Using {len(candidates)} manual clip(s); skipping LLM analysis.")
+    elif candidates_json:
         # Allow reusing a previous analysis (avoids calling the LLM again)
         with open(candidates_json) as f:
             raw = json.load(f)

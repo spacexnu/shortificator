@@ -40,6 +40,44 @@ class TestParserDefaults:
         assert ns.min_duration == 20
         assert ns.max_duration == 45
 
+    def test_clip_defaults_to_none(self):
+        assert parse(["-i", "v.mp4"]).clip is None
+
+    def test_clip_is_repeatable(self):
+        ns = parse(["-i", "v.mp4", "--clip", "1:30-2:10", "--clip", "5:00-5:45"])
+        assert ns.clip == ["1:30-2:10", "5:00-5:45"]
+
+
+class TestParseTimestamp:
+    @pytest.mark.parametrize(
+        ("value", "expected"),
+        [
+            ("90", 90.0),
+            ("90.5", 90.5),
+            ("1:30", 90.0),
+            ("01:02:03", 3723.0),
+            ("0:00:10.25", 10.25),
+        ],
+    )
+    def test_valid_formats(self, value, expected):
+        assert cli.parse_timestamp(value) == expected
+
+    @pytest.mark.parametrize("value", ["", "abc", "1:2:3:4", "1:-5", "::"])
+    def test_invalid_formats(self, value):
+        with pytest.raises(ValueError):
+            cli.parse_timestamp(value)
+
+
+class TestParseClips:
+    def test_multiple_clips(self):
+        clips = cli.parse_clips(["1:30-2:10", "300-360.5"])
+        assert clips == [(90.0, 130.0), (300.0, 360.5)]
+
+    @pytest.mark.parametrize("spec", ["1:30", "1:30-", "-2:10", "2:10-1:30", "1:30-1:30"])
+    def test_invalid_specs(self, spec):
+        with pytest.raises(ValueError):
+            cli.parse_clips([spec])
+
 
 class TestBuildDynamicSubtitleStyle:
     def test_defaults_preserved_when_no_flags(self):
@@ -131,3 +169,18 @@ class TestMainValidation:
         with pytest.raises(SystemExit):
             cli.main()
         assert "--max-duration must be greater" in capsys.readouterr().out
+
+    def test_rejects_clip_with_candidates(self, monkeypatch, capsys):
+        monkeypatch.setattr(
+            "sys.argv",
+            ["prog", "-i", "v.mp4", "--clip", "1:30-2:10", "--candidates", "c.json"],
+        )
+        with pytest.raises(SystemExit):
+            cli.main()
+        assert "either --clip or --candidates" in capsys.readouterr().out
+
+    def test_rejects_invalid_clip_spec(self, monkeypatch, capsys):
+        monkeypatch.setattr("sys.argv", ["prog", "-i", "v.mp4", "--clip", "2:10-1:30"])
+        with pytest.raises(SystemExit):
+            cli.main()
+        assert "end must be greater than start" in capsys.readouterr().out
