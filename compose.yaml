@@ -1,0 +1,46 @@
+services:
+  shortificator:
+    build: .
+    image: shortificator:latest
+    environment:
+      # Defaults to the bundled ollama service below; point it at
+      # http://host.docker.internal:11434 to reuse an Ollama on the host.
+      OLLAMA_HOST: ${OLLAMA_HOST:-http://ollama:11434}
+    depends_on:
+      - ollama
+    extra_hosts:
+      # Makes host.docker.internal resolve on Linux/WSL2 (native on Docker Desktop)
+      - "host.docker.internal:host-gateway"
+    volumes:
+      # Put input videos here (or point VIDEOS_DIR somewhere else)
+      - ${VIDEOS_DIR:-./}:/videos
+      # Generated Shorts land in ./output on the host
+      - ./output:/app/output
+      # YuNet model downloaded on first run, reused afterwards
+      - ./models:/app/models
+      # Whisper model cache (~3 GB for large-v3), downloaded once
+      - whisper-cache:/root/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  ollama:
+    image: ollama/ollama:latest
+    volumes:
+      # Pulled LLMs (several GB each), kept across runs
+      - ollama-models:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+volumes:
+  whisper-cache:
+  ollama-models:

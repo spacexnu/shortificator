@@ -1,4 +1,4 @@
-.PHONY: help install run lint lint-fix fmt fmt-check typecheck test check clean check-env docs-install docs-serve docs-build
+.PHONY: help install run lint lint-fix fmt fmt-check typecheck test check clean check-env docs-install docs-serve docs-build docker-build docker-run docker-pull docker-check-env docker-shell docker-down
 
 # Default video/output overridable on the command line:
 #   make run INPUT=my_video.mp4 OUTPUT=./output MODEL=llama3 MAX=5 CROP_MODE=face CONTENT_MODE=talking-head
@@ -57,6 +57,42 @@ cov: ## Run the test suite and emit XML + HTML coverage reports
 	poetry run pytest --cov-report=xml --cov-report=html
 
 check: lint fmt-check typecheck ## Run lint, format check and syntax check
+
+# --- Docker (optional alternative to the local Poetry setup) ----------------
+# Fully containerized: Ollama runs as a compose service (no host install
+# needed). Input videos are resolved against VIDEOS_DIR (default: repo root),
+# mounted at /videos inside the container. Outputs land in ./output as usual.
+# To reuse an Ollama already running on the host instead, set
+# OLLAMA_HOST=http://host.docker.internal:11434.
+
+docker-build: ## Build the Docker image
+	docker compose build
+
+docker-pull: ## Pull an LLM into the bundled Ollama service (var: MODEL)
+	docker compose up -d ollama
+	docker compose exec ollama ollama pull $(MODEL)
+
+docker-run: ## Run the pipeline in Docker (vars: INPUT, MODEL, MAX, CROP_MODE, CONTENT_MODE, DYNAMIC=1, VIDEOS_DIR)
+	docker compose run --rm shortificator \
+		--input /videos/$(INPUT) \
+		--output ./output \
+		--model $(MODEL) \
+		--max-shorts $(MAX) \
+		--crop-mode $(CROP_MODE) \
+		--content-mode $(CONTENT_MODE) \
+		$(if $(filter 1 true yes,$(DYNAMIC)),--dynamic-subtitles,)
+
+docker-check-env: ## Verify CUDA and Ollama from inside the container
+	docker compose run --rm --entrypoint python shortificator \
+		-c "import ctranslate2; print('CUDA devices:', ctranslate2.get_cuda_device_count())"
+	docker compose run --rm --entrypoint python shortificator \
+		-c "import ollama; print('Ollama models:', [m.model for m in ollama.list().models] or 'NONE pulled')"
+
+docker-shell: ## Open a shell inside the Docker image
+	docker compose run --rm --entrypoint bash shortificator
+
+docker-down: ## Stop compose services (Ollama) and remove containers
+	docker compose down
 
 docs-install: ## Install documentation dependencies
 	poetry install --only docs --no-root
