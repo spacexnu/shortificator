@@ -61,9 +61,7 @@ def render_subtitled_video(
             subtitle_words, active_word_idx = get_subtitle_chunk_at_time(
                 segments, current_time, dynamic_subtitle_style.words_per_chunk
             )
-            frame = draw_dynamic_subtitle(
-                frame, subtitle_words, active_word_idx, height, width, dynamic_subtitle_style
-            )
+            frame = draw_dynamic_subtitle(frame, subtitle_words, active_word_idx, height, width, dynamic_subtitle_style)
         else:
             subtitle_text = get_words_at_time(segments, current_time)
             frame = draw_subtitle(frame, subtitle_text, height, width)
