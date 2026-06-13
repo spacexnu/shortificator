@@ -25,6 +25,7 @@ poetry run python shorts_factory.py --help
 | `--candidates` | none | saved candidates JSON; skips LLM analysis |
 | `--language` | `Portuguese` | language for hook/reason text |
 | `--dynamic-subtitles` | off | use fixed-block highlighted subtitles |
+| `--subtitles-only` | off | burn subtitles into the full source video (no cropping/LLM; keeps source resolution and FPS) |
 | `--srt` | off | write SRT files |
 | `--crop-mode` | `face` | `face`, `center`, `gameplay`, `auto` |
 | `--content-mode` | `talking-head` | `talking-head`, `gameplay`, `auto` |

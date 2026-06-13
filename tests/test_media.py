@@ -52,6 +52,39 @@ class TestFfmpegCommands:
         assert cmd[cmd.index("-to") + 1] == "45.0"
         assert "aac" in cmd and "192k" in cmd
 
+    def test_merge_full_audio_copies_audio_stream(self, monkeypatch):
+        calls = []
+
+        def fake_run(cmd, capture_output, text):
+            calls.append(cmd)
+            return SimpleNamespace(returncode=0, stderr="")
+
+        monkeypatch.setattr(media.subprocess, "run", fake_run)
+        media.merge_full_audio("tmp.mp4", "src.mp4", "out.mp4")
+        assert len(calls) == 1
+        cmd = calls[0]
+        assert cmd[0] == "ffmpeg"
+        assert cmd[-1] == "out.mp4"
+        assert "-map" in cmd and "0:v:0" in cmd and "1:a:0" in cmd
+        assert "-ss" not in cmd and "-to" not in cmd
+        assert cmd[cmd.index("-c:a") + 1] == "copy"
+        assert "aac" not in cmd
+
+    def test_merge_full_audio_falls_back_to_aac(self, monkeypatch, capsys):
+        calls = []
+
+        def fake_run(cmd, capture_output, text):
+            calls.append(cmd)
+            returncode = 1 if len(calls) == 1 else 0
+            return SimpleNamespace(returncode=returncode, stderr="could not find tag for codec")
+
+        monkeypatch.setattr(media.subprocess, "run", fake_run)
+        result = media.merge_full_audio("tmp.mp4", "src.mp4", "out.mp4")
+        assert result.returncode == 0
+        assert len(calls) == 2
+        assert "aac" in calls[1] and "192k" in calls[1]
+        assert "re-encoding audio as AAC" in capsys.readouterr().out
+
     def test_encode_without_audio_command(self, monkeypatch):
         calls = self._capture(monkeypatch)
         media.encode_without_audio("tmp.mp4", "out.mp4")

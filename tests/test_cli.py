@@ -47,6 +47,12 @@ class TestParserDefaults:
         ns = parse(["-i", "v.mp4", "--clip", "1:30-2:10", "--clip", "5:00-5:45"])
         assert ns.clip == ["1:30-2:10", "5:00-5:45"]
 
+    def test_subtitles_only_defaults_to_false(self):
+        assert parse(["-i", "v.mp4"]).subtitles_only is False
+
+    def test_subtitles_only_flag(self):
+        assert parse(["-i", "v.mp4", "--subtitles-only"]).subtitles_only is True
+
 
 class TestParseTimestamp:
     @pytest.mark.parametrize(
@@ -184,3 +190,10 @@ class TestMainValidation:
         with pytest.raises(SystemExit):
             cli.main()
         assert "end must be greater than start" in capsys.readouterr().out
+
+    @pytest.mark.parametrize("extra", [["--clip", "1:30-2:10"], ["--candidates", "c.json"]])
+    def test_rejects_subtitles_only_with_cut_flags(self, monkeypatch, capsys, extra):
+        monkeypatch.setattr("sys.argv", ["prog", "-i", "v.mp4", "--subtitles-only", *extra])
+        with pytest.raises(SystemExit):
+            cli.main()
+        assert "--subtitles-only renders the full video" in capsys.readouterr().out

@@ -18,6 +18,27 @@ Enable the dynamic style with:
 
 Dynamic subtitles use fixed word blocks. The block stays in place while the current word is highlighted. When speech crosses into the next group, the block advances.
 
+## Subtitling the full video
+
+`--subtitles-only` burns subtitles into the entire source video instead of generating Shorts:
+
+```bash
+poetry run python -m shortificator \
+  --input my_video.mp4 \
+  --subtitles-only \
+  --dynamic-subtitles
+```
+
+In this mode:
+
+- there is no cropping and no LLM analysis — the only change is the burned-in subtitles;
+- the original resolution and frame rate are kept (`--fps` is ignored);
+- the audio track is stream-copied untouched (falling back to AAC 192k only if the source codec doesn't fit the MP4 container);
+- the output is a single `output/{name}_subtitled.mp4`;
+- the style follows the same rules as Shorts: sliding-window subtitles by default, fixed blocks with `--dynamic-subtitles`, and all style flags below apply;
+- `--srt` still writes the full-video `.srt`, and `--transcript` can reuse a saved transcript;
+- `--clip` and `--candidates` cannot be combined with it.
+
 ## Style flags
 
 | Flag | Default | Description |

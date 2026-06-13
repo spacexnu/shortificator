@@ -139,6 +139,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="Use large dynamic subtitles with word highlight, stroke, and shadow",
     )
     parser.add_argument(
+        "--subtitles-only",
+        action="store_true",
+        help="Burn subtitles into the full source video instead of generating Shorts: no cropping, "
+        "no LLM analysis, and the original resolution and frame rate are kept (--fps is ignored). "
+        "Combine with --dynamic-subtitles for the dynamic style.",
+    )
+    parser.add_argument(
         "--srt",
         action="store_true",
         help="Also write .srt subtitle files: one for the full source video and one per rendered Short",
@@ -235,6 +242,10 @@ def main():
         print("[ERROR] --max-duration must be greater than --min-duration.")
         sys.exit(1)
 
+    if args.subtitles_only and (args.clip or args.candidates):
+        print("[ERROR] --subtitles-only renders the full video; remove --clip/--candidates.")
+        sys.exit(1)
+
     manual_clips = None
     if args.clip:
         if args.candidates:
@@ -273,6 +284,7 @@ def main():
         output_dir=args.output,
         llm_model=args.model,
         max_shorts=args.max_shorts,
+        subtitles_only=args.subtitles_only,
         manual_clips=manual_clips,
         candidates_json=args.candidates,
         transcript_json=args.transcript,

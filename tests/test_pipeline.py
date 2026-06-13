@@ -108,6 +108,45 @@ def test_manual_clips_still_write_srt(patched, tmp_path):
     assert (tmp_path / "my_video_short_01.srt").exists()
 
 
+def test_subtitles_only_renders_full_video(patched, monkeypatch, tmp_path, capsys):
+    calls = []
+
+    def fake_render_full(input_video, segments, out_path, **kwargs):
+        calls.append((out_path, kwargs))
+        return out_path
+
+    monkeypatch.setattr(pipeline, "render_subtitled_video", fake_render_full)
+    pipeline.run(
+        input_video="my_video.mp4",
+        output_dir=str(tmp_path),
+        subtitles_only=True,
+        dynamic_subtitles=True,
+    )
+
+    assert patched["transcribe"] == 1
+    assert patched["analyze"] == 0
+    assert patched["render"] == []
+    assert len(calls) == 1
+    out_path, kwargs = calls[0]
+    assert out_path.endswith("my_video_subtitled.mp4")
+    assert kwargs["dynamic_subtitles"] is True
+    assert "subtitles-only mode" in capsys.readouterr().out
+    assert not (tmp_path / "my_video_candidates.json").exists()
+
+
+def test_subtitles_only_still_writes_full_srt(patched, monkeypatch, tmp_path):
+    monkeypatch.setattr(pipeline, "render_subtitled_video", lambda *a, **k: a[2])
+    pipeline.run(
+        input_video="my_video.mp4",
+        output_dir=str(tmp_path),
+        subtitles_only=True,
+        generate_srt=True,
+    )
+    full_srt = tmp_path / "my_video.srt"
+    assert full_srt.exists()
+    assert "-->" in full_srt.read_text(encoding="utf-8")
+
+
 def test_no_candidates_aborts_before_render(patched, monkeypatch, tmp_path, capsys):
     monkeypatch.setattr(pipeline, "analyze_with_llm", lambda segments, **kw: [])
     pipeline.run(input_video="my_video.mp4", output_dir=str(tmp_path), max_shorts=1)

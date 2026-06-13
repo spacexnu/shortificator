@@ -7,7 +7,7 @@ from .analysis import analyze_with_llm
 from .config import DEFAULT_OUTPUT_FPS, OUTPUT_LANGUAGE, SHORT_MAX_SECS, SHORT_MIN_SECS, ContentMode, CropMode
 from .media import has_audio_stream
 from .models import Segment, ShortCandidate
-from .rendering import render_short
+from .rendering import render_short, render_subtitled_video
 from .subtitles import DEFAULT_DYNAMIC_SUBTITLE_STYLE, DynamicSubtitleStyle
 from .subtitles.srt import build_srt
 from .transcription import transcribe
@@ -19,6 +19,7 @@ def run(
     llm_model: str = "llama3",
     max_shorts: int = 5,
     skip_analysis: bool = False,
+    subtitles_only: bool = False,
     manual_clips: list[tuple[float, float]] | None = None,
     candidates_json: str | None = None,
     transcript_json: str | None = None,
@@ -63,6 +64,24 @@ def run(
         full_srt_path = Path(output_dir) / f"{video_name}.srt"
         full_srt_path.write_text(build_srt(segments), encoding="utf-8")
         print(f"      Full-video subtitle saved to {full_srt_path.name}")
+
+    # --- Subtitles-only mode: burn captions into the full source video ---
+    if subtitles_only:
+        out_path = str(Path(output_dir) / f"{video_name}_subtitled.mp4")
+        print("[2/4] Skipping clip analysis (subtitles-only mode).")
+        print("\n[3/4] Burning subtitles into the full video...")
+        result = render_subtitled_video(
+            input_video,
+            segments,
+            out_path,
+            with_audio=with_audio,
+            dynamic_subtitles=dynamic_subtitles,
+            dynamic_subtitle_style=dynamic_subtitle_style,
+        )
+        print("\n[4/4] Done!")
+        if result:
+            print(f"      Subtitled video saved to {result}")
+        return
 
     # --- LLM analysis ---
     if manual_clips:

@@ -169,6 +169,19 @@ poetry run python -m shortificator \
   --dynamic-subtitles
 ```
 
+Subtitle the original video instead of cutting Shorts (no cropping, no LLM
+analysis; keeps the source resolution and frame rate):
+
+```bash
+poetry run python -m shortificator \
+  --input my_video.mp4 \
+  --subtitles-only \
+  --dynamic-subtitles
+```
+
+The output is a single `output/my_video_subtitled.mp4`. All `--sub-*` style
+flags apply; `--fps`, `--max-shorts`, and the crop/content modes are ignored.
+
 Pick the cut points yourself (skips the LLM analysis entirely; transcription,
 subtitles, and `--srt` work as usual):
 
@@ -223,6 +236,7 @@ poetry run python -m shortificator \
 | `--transcript`        | —                  | JSON of a previous transcript (skips Whisper)     |
 | `--language`          | `Portuguese`       | Language for the LLM `hook`/`reason` text (or set `OUTPUT_LANGUAGE`) |
 | `--dynamic-subtitles` | `false`            | Large subtitle style with word highlight, stroke, and shadow |
+| `--subtitles-only`    | `false`            | Burn subtitles into the full source video (no cropping/LLM; keeps source resolution and FPS) |
 | `--srt`               | `false`            | Also write `.srt` files: one for the full video and one per Short |
 | `--crop-mode`         | `face`             | Crop strategy: `face`, `center`, `gameplay`, `auto` |
 | `--content-mode`      | `talking-head`     | LLM selection mode: `talking-head`, `gameplay`, `auto` |
