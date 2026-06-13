@@ -20,6 +20,8 @@ output/{name}_transcript.json
 start, end, hook, reason, score
 ```
 
+This stage is skipped entirely when you pass manual cut points with `--clip` — see [Clip Analysis](clip-analysis.md#manual-clips).
+
 ## 3. Reframing and subtitles
 
 `shortificator.rendering.short.render_short()` crops the source to a 9:16 frame and burns subtitles into the video frames.

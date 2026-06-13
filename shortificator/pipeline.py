@@ -7,7 +7,7 @@ from .analysis import analyze_with_llm
 from .config import DEFAULT_OUTPUT_FPS, OUTPUT_LANGUAGE, SHORT_MAX_SECS, SHORT_MIN_SECS, ContentMode, CropMode
 from .media import has_audio_stream
 from .models import Segment, ShortCandidate
-from .rendering import render_short
+from .rendering import render_short, render_subtitled_video
 from .subtitles import DEFAULT_DYNAMIC_SUBTITLE_STYLE, DynamicSubtitleStyle
 from .subtitles.srt import build_srt
 from .transcription import transcribe
@@ -19,6 +19,8 @@ def run(
     llm_model: str = "llama3",
     max_shorts: int = 5,
     skip_analysis: bool = False,
+    subtitles_only: bool = False,
+    manual_clips: list[tuple[float, float]] | None = None,
     candidates_json: str | None = None,
     transcript_json: str | None = None,
     output_language: str = OUTPUT_LANGUAGE,
@@ -63,8 +65,34 @@ def run(
         full_srt_path.write_text(build_srt(segments), encoding="utf-8")
         print(f"      Full-video subtitle saved to {full_srt_path.name}")
 
+    # --- Subtitles-only mode: burn captions into the full source video ---
+    if subtitles_only:
+        out_path = str(Path(output_dir) / f"{video_name}_subtitled.mp4")
+        print("[2/4] Skipping clip analysis (subtitles-only mode).")
+        print("\n[3/4] Burning subtitles into the full video...")
+        result = render_subtitled_video(
+            input_video,
+            segments,
+            out_path,
+            with_audio=with_audio,
+            dynamic_subtitles=dynamic_subtitles,
+            dynamic_subtitle_style=dynamic_subtitle_style,
+        )
+        print("\n[4/4] Done!")
+        if result:
+            print(f"      Subtitled video saved to {result}")
+        return
+
     # --- LLM analysis ---
-    if candidates_json:
+    if manual_clips:
+        # User picked the cut points; render exactly those clips, no LLM selection.
+        candidates = [
+            ShortCandidate(start, end, hook=f"Manual clip {i + 1}", reason="User-specified time range")
+            for i, (start, end) in enumerate(manual_clips)
+        ]
+        max_shorts = len(candidates)
+        print(f"[2/4] Using {len(candidates)} manual clip(s); skipping LLM analysis.")
+    elif candidates_json:
         # Allow reusing a previous analysis (avoids calling the LLM again)
         with open(candidates_json) as f:
             raw = json.load(f)
